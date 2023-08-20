@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -81,7 +83,7 @@ var app = builder.Build();
 
 //app.Run(async (context) => await context.Response.SendFileAsync("D:\\IMG.JPG"));
 //app.Run(async (context) => await context.Response.SendFileAsync("Resourses\\IMG.JPG"));
-app.Run(async (context) => 
+app.Run(async (context) =>
 {
     //context.Response.ContentType = "text/html; charset=utf-8";
     //await context.Response.SendFileAsync("Html/index.html");
@@ -137,18 +139,51 @@ app.Run(async (context) =>
     //}
 
 
-    if (String.Compare(context.Request.Path, "/old", true) == 0)
+    //if (String.Compare(context.Request.Path, "/old", true) == 0)
+    //{
+    //    //await context.Response.WriteAsync("Old page");
+    //    context.Response.Redirect("/new");
+    //}
+    //else if (String.Compare(context.Request.Path, "/new", true) == 0)
+    //{
+    //    await context.Response.WriteAsync("New page");
+    //}
+    //else
+    //{
+    //    await context.Response.WriteAsync("Main page");
+    //}
+
+
+    //Person person = new("Albert", 28);
+    //await context.Response.WriteAsJsonAsync(person);
+
+
+    var response = context.Response;
+    var request = context.Request;
+
+    if (string.Compare(context.Request.Path, "/api/user", true) == 0)
     {
-        //await context.Response.WriteAsync("Old page");
-        context.Response.Redirect("/new");
+        var message = "Некорректные данные";
+        try
+        {
+            if (request.HasJsonContentType()) 
+            {
+                var jsonOptions = new JsonSerializerOptions();
+                jsonOptions.Converters.Add(new PersonConverter());
+
+                var person = await request.ReadFromJsonAsync<Person>(jsonOptions);
+
+                if (person != null)
+                    message = $"Name: {person.name}, Age: {person.age}";
+            }           
+        }
+        catch { }
+        await response.WriteAsJsonAsync(new { text = message });
     }
-    else if (String.Compare(context.Request.Path, "/new", true) == 0)
+    else 
     {
-        await context.Response.WriteAsync("New page");
-    }
-    else
-    {
-        await context.Response.WriteAsync("Main page");
+        context.Response.ContentType = "text/html; charset=utf-8";
+        await response.SendFileAsync("Html/sendJson.html");
     }
 
 });
@@ -168,4 +203,51 @@ app.Run();
 //await Task.Delay(5000);
 //await app.StopAsync();
 
+public record Person(string name, int age);
+
+public class PersonConverter : JsonConverter<Person>
+{
+    public override Person Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var personName = "Undefined";
+        var personAge = 0;
+
+        while (reader.Read()) 
+        { 
+            var propertyName = reader.GetString();
+            reader.Read();
+
+            switch (propertyName?.ToLower())
+            {
+                case "age" when reader.TokenType == JsonTokenType.Number:
+                    personAge = reader.GetInt32();
+                    break;
+                case "age" when reader.TokenType == JsonTokenType.String:
+                    string? stringValue = reader.GetString();
+                    if (int.TryParse(stringValue, out int value)) 
+                    {
+                        personAge = value;
+                    }
+                    break;
+                case "name":
+                    string? name = reader.GetString();
+                    if (name != null)
+                        personName = name;
+                    break;
+            }
+        }
+
+        return new Person(personName, personAge);
+    }
+
+    public override void Write(Utf8JsonWriter writer, Person person, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        writer.WriteString("name", person.name);
+        writer.WriteNumber("age", person.age);
+
+        writer.WriteEndObject();
+    }
+}
 

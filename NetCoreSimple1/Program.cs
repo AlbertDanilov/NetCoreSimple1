@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -81,8 +83,74 @@ var app = builder.Build();
 //app.Run(async (context) => await context.Response.SendFileAsync("Resourses\\IMG.JPG"));
 app.Run(async (context) => 
 {
-    context.Response.ContentType = "text/html; charset=utf-8";
-    await context.Response.SendFileAsync("Html/index.html");
+    //context.Response.ContentType = "text/html; charset=utf-8";
+    //await context.Response.SendFileAsync("Html/index.html");
+
+    //var path = context.Request.Path;
+    //var fullPath = $"html\\{path}";
+    //var response = context.Response;
+
+    //response.ContentType = "text/html; charset:utf-8";
+    //if (File.Exists(fullPath)) 
+    //{ 
+    //    await context.Response.SendFileAsync(fullPath);
+    //}
+    //else
+    //{
+    //    response.StatusCode = 404;
+    //    await context.Response.WriteAsync("<h2>Not found.</h2>");
+    //}
+
+    //context.Response.Headers.ContentDisposition = "attachment; filename=my_IMG.JPG";
+    //await context.Response.SendFileAsync("Resourses\\IMG.JPG");
+
+    //var fileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
+    //var fileInfo = fileProvider.GetFileInfo("Resourses\\IMG.JPG");
+
+    //context.Response.Headers.ContentDisposition = "attachment; filename=my_IMG.JPG";
+    //await context.Response.SendFileAsync(fileInfo);
+    //await context.Response.SendFileAsync(fileInfo);
+
+
+    //context.Response.ContentType = "text/html; charset=utf-8";
+
+    //if (string.Compare(context.Request.Path, "/postuser",true) == 0)
+    //{
+    //    var form = context.Request.Form;
+    //    string name = form["name"];
+    //    string age = form["age"];
+    //    string[] languages = form["languages"]; 
+
+    //    StringBuilder stringBuilder = new StringBuilder();
+
+    //    foreach (var lang in languages) 
+    //    { 
+    //        stringBuilder.Append(lang); 
+    //        stringBuilder.Append(" "); 
+    //    }
+
+    //    await context.Response.WriteAsync($"<div><p>Name: {name}</p><p>Age: {age}</p><div>Languages: {stringBuilder.ToString()}</div></div>");
+    //}
+    //else 
+    //{
+    //    await context.Response.SendFileAsync("Html/index.html");
+    //}
+
+
+    if (String.Compare(context.Request.Path, "/old", true) == 0)
+    {
+        //await context.Response.WriteAsync("Old page");
+        context.Response.Redirect("/new");
+    }
+    else if (String.Compare(context.Request.Path, "/new", true) == 0)
+    {
+        await context.Response.WriteAsync("New page");
+    }
+    else
+    {
+        await context.Response.WriteAsync("Main page");
+    }
+
 });
 
 //app.Run(async (context) => await context.Response.WriteAsync($"Path: {context.Request.Path}"));

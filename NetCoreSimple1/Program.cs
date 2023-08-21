@@ -20,19 +20,41 @@ var app = builder.Build();
 string date = "";
 
 
-async Task GetDate(HttpContext context, RequestDelegate next)
+app.MapWhen(
+    context => context.Request.Path == "/time",
+    HandeTimeRequest
+);
+
+app.Run(async context =>
 {
-    date = DateTime.Now.ToShortDateString();
-    await next.Invoke(context);
-    Console.WriteLine($"Date: {date}");
+    await context.Response.WriteAsync("Hello METANIT.COM");
+});
+
+app.Run();
+
+void HandeTimeRequest(IApplicationBuilder appBuilder)
+{
+    appBuilder.Use(async (context, next) =>
+    {
+        var time = DateTime.Now.ToShortTimeString();
+        Console.WriteLine(time);
+        await next();
+    });
 }
 
 
-app.Use(GetDate);
+//async Task GetDate(HttpContext context, RequestDelegate next)
+//{
+//    date = DateTime.Now.ToShortDateString();
+//    await next.Invoke(context);
+//    Console.WriteLine($"Date: {date}");
+//}
 
-app.Run(async (context) => await context.Response.WriteAsync($"Date: {date}"));
 
-app.Run();
+//app.Use(GetDate);
+
+//app.Run(async (context) => await context.Response.WriteAsync($"Date: {date}"));
+
 
 
 //app.Run(async (context) =>

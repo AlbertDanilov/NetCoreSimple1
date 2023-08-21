@@ -17,30 +17,40 @@ using System.Text.RegularExpressions;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-string date = "";
 
+app.UseToken("55555");
 
-app.MapWhen(
-    context => context.Request.Path == "/time",
-    HandeTimeRequest
-);
-
-app.Run(async context =>
-{
-    await context.Response.WriteAsync("Hello METANIT.COM");
-});
+app.Run(async (context) => await context.Response.WriteAsync("Hello!"));
 
 app.Run();
 
-void HandeTimeRequest(IApplicationBuilder appBuilder)
-{
-    appBuilder.Use(async (context, next) =>
-    {
-        var time = DateTime.Now.ToShortTimeString();
-        Console.WriteLine(time);
-        await next();
-    });
-}
+
+
+
+//string date = "";
+
+
+//app.MapWhen(
+//    context => context.Request.Path == "/time",
+//    HandeTimeRequest
+//);
+
+//app.Run(async context =>
+//{
+//    await context.Response.WriteAsync("Hello METANIT.COM");
+//});
+
+
+
+//void HandeTimeRequest(IApplicationBuilder appBuilder)
+//{
+//    appBuilder.Use(async (context, next) =>
+//    {
+//        var time = DateTime.Now.ToShortTimeString();
+//        Console.WriteLine(time);
+//        await next();
+//    });
+//}
 
 
 //async Task GetDate(HttpContext context, RequestDelegate next)

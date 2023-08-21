@@ -17,37 +17,55 @@ using System.Text.RegularExpressions;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.Run(async (context) =>
+string date = "";
+
+
+async Task GetDate(HttpContext context, RequestDelegate next)
 {
-    var response = context.Response;
-    var request = context.Request;
+    date = DateTime.Now.ToShortDateString();
+    await next.Invoke(context);
+    Console.WriteLine($"Date: {date}");
+}
 
-    response.ContentType = "text/html; charset=utf-8";
 
-    if (request.Path =="/upload" && request.Method == "POST") 
-    {
-        IFormFileCollection files = request.Form.Files;
-        var uploadPath = $"{Directory.GetCurrentDirectory()}/uploads";
-        Directory.CreateDirectory(uploadPath);
+app.Use(GetDate);
 
-        foreach (var file in files) 
-        {
-            string fullPath = $"{uploadPath}/{file.FileName}";
-
-            using (var fileStream = new FileStream(fullPath, FileMode.Create))
-            {
-                await file.CopyToAsync(fileStream); 
-            }
-        }
-        await response.WriteAsync("Файлы загружены");
-    }
-    else 
-    {
-        await response.SendFileAsync("Html/filePage.html");
-    }
-});
+app.Run(async (context) => await context.Response.WriteAsync($"Date: {date}"));
 
 app.Run();
+
+
+//app.Run(async (context) =>
+//{
+//    var response = context.Response;
+//    var request = context.Request;
+
+//    response.ContentType = "text/html; charset=utf-8";
+
+//    if (request.Path =="/upload" && request.Method == "POST") 
+//    {
+//        IFormFileCollection files = request.Form.Files;
+//        var uploadPath = $"{Directory.GetCurrentDirectory()}/uploads";
+//        Directory.CreateDirectory(uploadPath);
+
+//        foreach (var file in files) 
+//        {
+//            string fullPath = $"{uploadPath}/{file.FileName}";
+
+//            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+//            {
+//                await file.CopyToAsync(fileStream); 
+//            }
+//        }
+//        await response.WriteAsync("Файлы загружены");
+//    }
+//    else 
+//    {
+//        await response.SendFileAsync("Html/filePage.html");
+//    }
+//});
+
+
 
 
 
